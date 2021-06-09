@@ -79,9 +79,9 @@ class Quaternion:
 
         cos_tht = np.dot(npv1, npv2)
 
-        if (np.isclose(tht, -1)) {
+        if np.isclose(tht, -1):
             raise ValueError
-        }
+        
         axis = np.cross(npv1, npv2)
         s = np.sqrt((1+cos_tht) * 2)
         self[:3] = axis / s
