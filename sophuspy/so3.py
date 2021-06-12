@@ -3,29 +3,36 @@ import numpy as np
 from .quaternion import Quaternion
 
 class SO3:
-    def __init__(self):
-        self.unit_quaternion = Quaternion()
+    def __init__(self, quat = Quaternion()):
+        self.unit_quaternion = quat
         
     @staticmethod
-    def from_quat(vec):
-        np_vec = np.asarray(vec)
-        if np_vec.size != 3:
+    def from_quat(quat, order = "xyzw"):
+        np_quat = np.asarray(quat)
+        if np_quat.size != 4:
             raise ValueError()
+        if order == "xyzw":
+            q = Quaternion(np_quat[0], np_quat[1], np_quat[2], np_quat[3])
+        elif order == "wxyz":
+            q = Quaternion(np_quat[1], np_quat[2], np_quat[3], np_quat[0])
+        else:
+            raise ValueError
+        return SO3(q)
 
     @staticmethod
     def exp(vec):
         np_vec = np.asarray(vec)
-        if np_vec.size != 3:
+        if np_vec.size != 3 or (np_vec.shape[0] != 3 and np_vec.shape[1] != 3):
             raise ValueError()
 
     @staticmethod
     def from_rotv(vec):
-        return exp(vec)
+        return SO3.exp(vec)
     
     @staticmethod
     def from_mat(mat):
-        np_vec = np.asarray(vec)
-        if np_vec.size != 3:
+        np_vec = np.asarray(mat)
+        if np_vec.shape != (3,3):
             raise ValueError()
 
     def matrix(self):
@@ -35,21 +42,11 @@ class SO3:
         pass
 
     def inverse(self):
-        pass
+        return SO3(self.unit_quaternion.inverse())
 
-    @staticmethod
-    def mul_quat_qual(a, b):
-        x = a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z
-        y = a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y
-        z = a.w * b.y + a.y * b.w + a.z * b.x - a.x * b.z
-        w = a.w * b.z + a.z * b.w + a.x * b.y - a.y * b.x
+    def __mul__(self, other):
+        return SO3(self.unit_quaternion * other)
 
-        return SO3.from_quat([x,y,z,w])
-
-    @staticmethod
-    def mul_quat_vec(q, v):
-        uv = np.cross(q[:3], v)
-        uv += uv
-
-        return v + q[3] * uv + np.cross(q[:3], uv)
+    def __matmul__(self, v):
+        return self.unit_quaternion @ v
     
