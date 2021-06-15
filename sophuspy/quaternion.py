@@ -24,11 +24,22 @@ class Quaternion:
     def w(self):
         return self.data[3]
 
+    @property
+    def vec(self):
+        return self.data[:3]
+
+    @vec.setter
+    def set_vec(self, v):
+        np_v = np.asarray(v)
+        if np_v.size() != 3 or (np_v.shape[0] != 3 and np_v.shape[1] != 3):
+            raise ValueError
+        self.data[:3] = v
+
     def copy(self):
         return Quaternion(self.w, self.x, self.y, self.z)
 
-    def set_indentity(self):
-        self.data[0:3] = 0
+    def set_identity(self):
+        self.vec = 0
         self.data[3] = 1
 
     def norm2(self):
@@ -110,14 +121,14 @@ class Quaternion:
         q = self.copy()
         q.data = q.data * s0 + other.data * s1
         q.normalize()
-        return q
+        return quat
 
     def __matmul__(self, v):
         if not isinstance(v, np.ndarray):
             raise ValueError
-        uv = np.cross(self.data[:3], v)
+        uv = np.cross(self.vec, v)
         uv += uv
-        return v + self.data[3] * uv + np.cross(self.data[:3], uv)
+        return v + self.data[3] * uv + np.cross(self.vec, uv)
 
     def __mul__(self,q):
         if not isinstance(q, Quaternion):

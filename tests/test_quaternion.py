@@ -43,7 +43,7 @@ class TestQuaternion(unittest.TestCase):
             self.assertTrue(np.allclose(q3.data, scipy_q3.as_quat()))
 
     def test_as_matrix(self):
-        for i in range(1):
+        for i in range(100):
             quat = np.random.rand(4)
             q1 = Quaternion(quat[0],quat[1],quat[2],quat[3])
             scipy_q1 = R.from_quat([quat[0],quat[1],quat[2],quat[3]])
@@ -74,7 +74,3 @@ class TestQuaternion(unittest.TestCase):
             print(q2)
             print(scipy_q2.as_quat())
             self.assertTrue(np.allclose(q2.as_matrix(),scipy_q2.as_matrix()))
-
-
-if __name__ == "__main__":
-    unittest.main()
