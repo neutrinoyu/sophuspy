@@ -1,9 +1,12 @@
 import numpy as np
+from numpy.lib.arraysetops import isin
 
 from .quaternion import Quaternion
 
 class SO3:
     def __init__(self, quat = Quaternion()):
+        if not isinstance(quat, Quaternion):
+            raise ValueError
         self.unit_quaternion = quat
         
     @staticmethod
@@ -20,21 +23,27 @@ class SO3:
         return SO3(q)
 
     @staticmethod
-    def exp(vec):
+    def exp_theta(vec):
         np_vec = np.asarray(vec)
         if np_vec.size != 3 or (np_vec.shape[0] != 3 and np_vec.shape[1] != 3):
             raise ValueError()
         tht_p2 = (np_vec**2).sum()
+        tht = np.sqrt(tht_p2)
+
         if tht_p2 < 1e-10:
             tht_p4 = tht_p2 * tht_p2
             imag = 0.5 - 1/48 * tht_p2 + 1/3840 * tht_p4
             real = 1 - 1/8 * tht_p2 + 1/384 * tht_p4
         else:
-            tht = np.sqrt(tht_p2)
             imag = np.sin(tht / 2) / tht
             real = np.cos(tht / 2)
         quat = Quaternion(imag * np_vec[0], imag * np_vec[1], imag * np_vec[2], real)
-        return SO3(quat)
+        
+        return SO3(quat), tht
+
+    @staticmethod
+    def exp(vec):
+        return SO3.exp_theta(vec)[0]
 
     @staticmethod
     def from_rotv(vec):
