@@ -61,7 +61,7 @@ class SO3:
 
         t = 0
         if sq_norm < 1e-10:
-            t = 2 / w (1 - sq_norm / w**2 / 3)
+            t = 2 / w - (1 - sq_norm / w**2 / 3)
         else:
             n = np.sqrt(sq_norm)
             if abs(w) < 1e-6:
@@ -92,7 +92,7 @@ class SO3:
         return SO3(self.unit_quaternion.inverse())
 
     def __mul__(self, other):
-        return SO3(self.unit_quaternion * other)
+        return SO3(self.unit_quaternion * other.unit_quaternion)
 
     def __matmul__(self, v):
         return self.unit_quaternion @ v
