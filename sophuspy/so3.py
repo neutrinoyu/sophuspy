@@ -101,6 +101,8 @@ class SO3:
         return SO3(self.unit_quaternion.inverse())
 
     def __mul__(self, other):
+        if not isinstance(other, SO3):
+            raise ValueError
         return SO3(self.unit_quaternion * other.unit_quaternion)
 
     def __matmul__(self, v):
