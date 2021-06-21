@@ -106,3 +106,10 @@ class SO3:
     def __matmul__(self, v):
         return self.unit_quaternion @ v
     
+    def __repr__(self):
+        log_ = self.log()
+        return "SO3(%.4f, %.4f, %.4f)" % (log_[0], log_[1], log_[2])
+
+    def __str__(self):
+        log_ = self.log()
+        return str(log_)
