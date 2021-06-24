@@ -100,6 +100,58 @@ class SO3:
     def inverse(self):
         return SO3(self.unit_quaternion.inverse())
 
+    @staticmethod
+    def Dx_exp_x_at_0():
+        J = np.array([[0.5, 0, 0],
+                      [0, 0.5, 0],
+                      [0, 0, 0.5],
+                      [0, 0, 0]])
+        return J
+
+    @staticmethod
+    def Dx_exp_x(omega):
+        c0 = omega[0] * omega[0]
+        c1 = omega[1] * omega[1]
+        c2 = omega[2] * omega[2]
+        c3 = c0 + c1 + c2
+
+        if c3 < 1e-5:
+            return SO3.Dx_exp_x_at_0()
+        
+        c4 = np.sqrt(c3)
+        c5 = 1.0 / c4
+        c6 = 0.5 * c4
+        c7 = np.sin(c6)
+        c8 = c5 * c7
+        c9 = np.power(c3, -3.0 / 2.0)
+        c10 = c7 * c9
+        c11 = 1.0 / c3
+        c12 = np.cos(c6)
+        c13 = 0.5 * c11 * c12
+        c14 = c7 * c9 * omega[0]
+        c15 = 0.5 * c11 * c12 * omega[0]
+        c16 = -c14 * omega[1] + c15 * omega[1]
+        c17 = -c14 * omega[2] + c15 * omega[2]
+        c18 = omega[1] * omega[2]
+        c19 = -c10 * c18 + c13 * c18
+        c20 = 0.5 * c5 * c7
+        
+        J = np.empty((4,3))
+        J[0, 0] = -c0 * c10 + c0 * c13 + c8
+        J[0, 1] = c16
+        J[0, 2] = c17
+        J[1, 0] = c16
+        J[1, 1] = -c1 * c10 + c1 * c13 + c8
+        J[1, 2] = c19
+        J[2, 0] = c17
+        J[2, 1] = c19
+        J[2, 2] = -c10 * c2 + c13 * c2 + c8
+        J[3, 0] = -c20 * omega[0]
+        J[3, 1] = -c20 * omega[1]
+        J[3, 2] = -c20 * omega[2]
+
+        return J
+
     def __mul__(self, other):
         if not isinstance(other, SO3):
             raise ValueError

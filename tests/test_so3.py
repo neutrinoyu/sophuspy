@@ -31,3 +31,23 @@ class TestSO3(unittest.TestCase):
             print(sohpus_so3.log())
             print(scipy_r.as_rotvec())
             self.assertTrue(np.allclose(sohpus_so3.log(), scipy_r.as_rotvec()))
+
+    def test_dervative(self):
+        v = np.array([0.5,0.4,-.5])
+        dv_t = 0.0001
+        dv = np.array([dv_t , 0.000, 0.000])
+        der = (SO3.exp(v+dv).unit_quaternion.data - SO3.exp(v).unit_quaternion.data) / dv_t
+        der2 = SO3.Dx_exp_x(v) @ dv / dv_t
+        print(der, der2, np.linalg.norm(der-der2))
+        self.assertTrue(np.linalg.norm(der-der2) < 1e-4)
+
+    def test_dervative_so3(self):
+        v = np.array([0.5,0.4,-.5])
+        dv_t = 0.0001
+        dv = np.array([dv_t , 0.000, 0.000])
+        der = ((SO3.exp(v) * SO3.exp(dv)).log() - SO3.exp(v).log()) / dv_t
+        print(der)
+        Jr = np.eye(3) - (1-np.cos(dv))
+        print(SO3.hat(dv) @ v)
+        # der2 = SO3.Dx_exp_x(v) @ dv / dv_t
+        # print(der, der2, np.linalg.norm(der-der2))
