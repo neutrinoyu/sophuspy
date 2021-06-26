@@ -39,15 +39,55 @@ class TestSO3(unittest.TestCase):
         der = (SO3.exp(v+dv).unit_quaternion.data - SO3.exp(v).unit_quaternion.data) / dv_t
         der2 = SO3.Dx_exp_x(v) @ dv / dv_t
         print(der, der2, np.linalg.norm(der-der2))
-        self.assertTrue(np.linalg.norm(der-der2) < 1e-4)
+        self.assertTrue(np.linalg.norm(der-der2) < 2e-5)
 
     def test_dervative_so3(self):
-        v = np.array([0.5,0.4,-.5])
         dv_t = 0.0001
-        dv = np.array([dv_t , 0.000, 0.000])
-        der = ((SO3.exp(v) * SO3.exp(dv)).log() - SO3.exp(v).log()) / dv_t
-        print(der)
-        Jr = np.eye(3) - (1-np.cos(dv))
-        print(SO3.hat(dv) @ v)
-        # der2 = SO3.Dx_exp_x(v) @ dv / dv_t
-        # print(der, der2, np.linalg.norm(der-der2))
+        v = np.array([0,0,0])
+        dv_array = [np.array([1.0 , 0.0, 0.0]), np.array([0.0 , 1.0, 0.0]), np.array([0.0 , 0.0, 1.0])]
+        for i in range(100):
+            if i != 0:
+                v = np.random.rand(3)
+            for dv in dv_array:
+                dv = dv * dv_t
+
+                der = ((SO3.exp(v).inverse() * SO3.exp(v + dv)).log()) / dv_t
+                print("sim derivative: ", der)
+                norm_v = np.linalg.norm(v)
+
+                Jr = SO3.Jr(v)
+                der2 = Jr @ dv / dv_t
+                print("SO3 calc derivative: ", der2)
+                print("diff: ", der2 - der, np.abs((der2 - der)).max())
+                self.assertTrue(np.abs((der2 - der)).max() < 2e-5)
+
+                der = ((SO3.exp(v) * SO3.exp(dv)).log() - SO3.exp(v).log()) / dv_t
+                print("sim derivative: ", der)
+                norm_v = np.linalg.norm(v)
+
+                Jr_inv = SO3.Jr_inv(v)
+                der2 = Jr_inv @ dv / dv_t
+                print("SO3 calc derivative: ", der2)
+                print("diff: ", der2 - der, np.abs((der2 - der)).max())
+                self.assertTrue(np.abs((der2 - der)).max() < 2e-5)
+
+
+                der = ((SO3.exp(v + dv) * SO3.exp(v).inverse()).log()) / dv_t
+                print("sim derivative: ", der)
+                norm_v = np.linalg.norm(v)
+
+                Jl = SO3.Jl(v)
+                der2 = Jl @ dv / dv_t
+                print("SO3 calc derivative: ", der2)
+                print("diff: ", der2 - der, np.abs((der2 - der)).max())
+                self.assertTrue(np.abs((der2 - der)).max() < 2e-5)
+
+                der = ((SO3.exp(dv) * SO3.exp(v)).log() - SO3.exp(v).log()) / dv_t
+                print("sim derivative: ", der)
+                norm_v = np.linalg.norm(v)
+
+                Jl_inv = SO3.Jl_inv(v)
+                der2 = Jl_inv @ dv / dv_t
+                print("SO3 calc derivative: ", der2)
+                print("diff: ", der2 - der, np.abs((der2 - der)).max())
+                self.assertTrue(np.abs((der2 - der)).max() < 2e-5)

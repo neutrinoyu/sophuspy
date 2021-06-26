@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.lib.arraysetops import isin
+from numpy.linalg.linalg import norm
 
 from .quaternion import Quaternion
 
@@ -27,6 +28,7 @@ class SO3:
         np_vec = np.asarray(vec)
         if np_vec.size != 3 or (np_vec.shape[0] != 3 and np_vec.shape[1] != 3):
             raise ValueError()
+        np_vec = np_vec.reshape((3,))
         tht_p2 = (np_vec**2).sum()
         tht = np.sqrt(tht_p2)
 
@@ -151,6 +153,49 @@ class SO3:
         J[3, 2] = -c20 * omega[2]
 
         return J
+
+    @staticmethod
+    def J_at_0():
+        J = np.array([[1.0, 0, 0],
+                      [0, 1.0, 0],
+                      [0, 0, 1.0]])
+        return J
+
+    @staticmethod
+    def Jl(omega):
+        np_omega = np.asarray(omega).reshape((3,1))
+        
+        norm_omega = np.linalg.norm(np_omega)
+
+        if norm_omega < 1e-5:
+            return SO3.J_at_0()
+
+        unit_omega = np_omega / norm_omega
+        t1 = np.sin(norm_omega) / norm_omega
+
+        return t1 * np.eye(3) + (1-t1) * unit_omega * unit_omega.T + (1 - np.cos(norm_omega)) / norm_omega * SO3.hat(unit_omega)
+
+    @staticmethod
+    def Jl_inv(omega):
+        np_omega = np.asarray(omega).reshape((3,1))
+        
+        norm_omega = np.linalg.norm(np_omega)
+
+        if norm_omega < 1e-5:
+            return SO3.J_at_0()
+
+        unit_omega = np_omega / norm_omega
+        t1 = norm_omega / 2 / np.tan(norm_omega / 2)
+
+        return t1 * np.eye(3) + (1-t1) * unit_omega * unit_omega.T - norm_omega / 2 * SO3.hat(unit_omega)
+
+    @staticmethod
+    def Jr(omega):
+        return SO3.Jl(np.array([-omega[0], -omega[1], -omega[2]]))
+
+    @staticmethod
+    def Jr_inv(omega):
+        return SO3.Jl_inv(np.array([-omega[0], -omega[1], -omega[2]]))
 
     def __mul__(self, other):
         if not isinstance(other, SO3):
