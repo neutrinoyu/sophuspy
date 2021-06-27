@@ -72,7 +72,7 @@ class SO3:
 
         t = 0
         if sq_norm < 1e-10:
-            t = 2 / w - (1 - sq_norm / w**2 / 3)
+            t = 2 / w -  2/3 * sq_norm / w**3
         else:
             n = np.sqrt(sq_norm)
             if abs(w) < 1e-6:
