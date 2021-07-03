@@ -66,15 +66,15 @@ class SO3:
     def matrix(self):
         return self.unit_quaternion.as_matrix()
 
-    def log(self):
+    def log_theta(self):
         sq_norm = (self.unit_quaternion.vec**2).sum()
         w = self.unit_quaternion.data[3]
 
         t = 0
+        n = np.sqrt(sq_norm)
         if sq_norm < 1e-10:
             t = 2 / w -  2/3 * sq_norm / w**3
         else:
-            n = np.sqrt(sq_norm)
             if abs(w) < 1e-6:
                 if w > 0:
                     t = np.pi / n
@@ -82,8 +82,11 @@ class SO3:
                     t = - np.pi / n
             else:
                 t = 2 * np.arctan(n/w) / n
-        return t * self.unit_quaternion.vec
+        return t * self.unit_quaternion.vec, t * n
     
+    def log(self):
+        return self.log_theta()[0]
+
     def copy(self):
         return SO3(self.unit_quaternion.copy())
 
