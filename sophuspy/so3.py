@@ -83,6 +83,9 @@ class SO3:
             else:
                 t = 2 * np.arctan(n/w) / n
         return t * self.unit_quaternion.vec
+    
+    def copy(self):
+        return SO3(self.unit_quaternion.copy())
 
     @staticmethod
     def hat(omega):
